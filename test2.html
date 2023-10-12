@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Canvas в HTML5</title>
+    <style type="text/css">
+        @font-face {
+            font-family: 'Pixel';
+            src: url('joystix.ttf') format('truetype');
+
+        }
+
+        canvas {
+            font-family: PressStart;
+            margin: 20px;
+
+        }
+
+        #pigtails {
+            font-family: "Pixel";
+            font-size: 40px;
+            color: whitesmoke;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+        }
+
+        #screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #8fd9ec;
+
+
+        }
+
+
+        @media only screen and (max-width: 900px) {
+            canvas {
+                margin: 0px;
+                width: 720px;
+                height: 370px;
+            }
+
+            @media only screen and (max-width: 800px) {
+                canvas {
+                    margin: 0px;
+                    width: 700px;
+                    height: 400px;
+                }
+
+
+                @media only screen and (max-width: 700px) {
+                    canvas {
+                        margin: 0px;
+                        width: 600px;
+                        height: 300px;
+                    }
+                }
+
+                @media only screen and (max-width: 570px) {
+                    canvas {
+                        margin: 0px;
+                        width: 450px;
+                        height: 300px;
+                    }
+                }
+
+
+                @media only screen and (max-width: 500px) {
+                    canvas {
+                        margin: 0px;
+                        width: 280px;
+                        height: 150px;
+                    }
+                }
+
+    </style>
+
+</head>
+
+<body style="margin:0px;padding:0px;background-color:#602020;">
+    <div id="screen">
+
+        <canvas id="myCanvas" width="960" height="544">
+            Ваш браузер не поддерживает Canvas
+        </canvas>
+
+    </div>
+
+    <div id="pigtails">PigletsTails</div>
+    <script src="jquery-3.4.1.min.js"></script>
+    <script>
+        console.log(window.innerHeight);
+
+
+        canvas = document.getElementById("myCanvas"),
+            c = canvas.getContext("2d");
+
+
+
+
+
+        window.addEventListener("orientationchange", function() {
+            console.log(23424);
+        });
+
+
+        // FULLSCREEN 
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement && // alternative standard method
+                !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) { // current working methods
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.msRequestFullscreen) {
+                    document.documentElement.msRequestFullscreen();
+                } else if (document.documentElement.mozRequestFullScreen) {
+                    document.documentElement.mozRequestFullScreen();
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            }
+        }
+
+
+        /*
+                document.getElementById("myCanvas").onclick = function() {
+                    
+                    
+
+                           toggleFullScreen();
+                        
+
+                 
+                };
+                */
+
+
+
+        // END
+
+
+        // Load Images
+
+        background = new Image();
+        background.src = 'background.png';
+
+
+
+        img = new Image();
+        img.src = 'pig.png';
+
+
+        ghost = new Image();
+        ghost.src = 'ghost.png';
+
+        forest = new Image();
+        forest.src = 'forest2.png';
+
+        mush = new Image();
+        mush.src = 'mush.png';
+
+        goneMushPic = new Image();
+        goneMushPic.src = 'gonemush.png';
+
+        boarEatMushPic = new Image();
+        boarEatMushPic.src = 'boareatmush.png';
+
+
+
+        boar = new Image();
+        boar.src = 'boar.png';
+
+
+        restartimg = new Image();
+        restartimg.src = 'restart2.png';
+
+
+        hpimg = new Image();
+        hpimg.src = 'hp.png';
+
+
+
+
+        hpBonusimg = new Image();
+        hpBonusimg.src = 'hpbonus.png';
+
+
+
+        tellimg = new Image();
+        tellimg.src = 'tell.png';
+
+        chikenimg = new Image();
+        chikenimg.src = 'chiken.png';
+
+        scoreimg = new Image();
+        scoreimg.src = 'score.png';
+
+
+        //
+
+        // Music Load
+
+        hrum = new Audio('hrum.mp3');
+
+        tavern = new Audio('tavern.mp3');
+
+
+        wboar = new Audio('boar.mp3');
+        wildboar = new Audio('wildboar.mp3');
+        hpBonusMusic = new Audio('hpbonus.mp3');
+
+        tavern.addEventListener('ended', function() {
+            this.currentTime = 0;
+            this.play();
+        }, false);
+
+
+        //
+
+
+        function getRandomInt(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min)) + min; //Максимум не включается, минимум включается
+        }
+
+
+        function pereminit() {
+
+
+
+
+            hpBonusTime = Date.now() + 10000;
+            hpBonusSet = 0;
+            hpBonusX = -1000;
+            hpBonusY = 0;
+            hpBonusAplha = 0.5;
+
+
+            hp = 3;
+            live = true;
+            undeadtime = Date.now();
+            mercanie = 1.0;
+            mercanieway = false;
+
+
+            bx = 520;
+            by = 220;
+            bax = 0;
+            bay = 0;
+
+
+            x = 0;
+
+            game = true;
+
+
+            grib = true;
+
+            score = 0;
+            scoreAlpha = 1.0;
+            scoreBoared = 0;
+            scoreBoaredTime = Date.now();
+            scoreBoaredDuration = 1000;
+
+
+            mx = 0;
+            my = 0;
+            mushangle = 0;
+            goneMushes = [];
+
+
+
+            mx = getRandomInt(0, 910);
+            my = getRandomInt(0, 510);
+
+
+
+
+
+
+            boartime = Date.now();
+
+
+
+
+            pw = "down";
+            old = Date.now();
+            px = 0;
+            py = 0;
+            ppy = 0;
+            ppx = 0;
+            skor = 19;
+
+        };
+
+        pereminit();
+
+        // c.scale(0.5,0.5);
+
+
+        class Loading {
+
+            constructor(main) {
+
+
+                this.main = main;
+            }
+
+
+            begin() {
+
+                c.fillStyle = "rgba(60,20,20,1.0)";
+                c.fillRect(0, 0, 1000, 1000);
+
+                c.font = '50px Pixel';
+
+
+
+                // Заполняем текст градиентом
+                c.fillStyle = "white";
+
+
+                c.fillText("ЗАГРУЗКА...", 350, 290, 300);
+                setTimeout(function() {
+                    console.log("wait")
+                    //startMenu();
+                    window.onload = this.main;
+                }, 1000);
+
+
+
+            }
+
+
+
+
+
+        }
+
+        var loading = new Loading();
+
+        loading.begin(PigletsTails());
+
+
+
+
+
+        /*
+                function startMenu()
+
+
+
+                {
+
+
+                    x = -50;
+                    y = 0;
+                    go = false;
+
+                    function drawIt() {
+
+                        
+         setTimeout(function () {requestAnimationFrame(drawIt);},130);
+
+                        function wiggleset() {
+                            if (go == false) {
+
+
+                                go = !go;
+                                wayxy = getRandomInt(0, 2);
+
+                                wayplusminus = getRandomInt(0, 2);
+                                waysteps = getRandomInt(0, 20);
+
+                                console.log(go);
+                            }
+
+
+                        };
+
+
+                        function wigglego(s) {
+
+
+                            if (go) {
+
+                                if (wayxy == 1) {
+
+
+                                    if (wayplusminus == 1) {
+                                        x = x + s;
+
+                                    } else {
+                                        x = x - s;
+
+                                    }
+
+                                } else {
+
+                                    if (wayplusminus == 1) {
+                                        y = y + s;
+
+
+                                    } else {
+                                        y = y - s;
+
+                                    }
+                                }
+
+                                console.log(waysteps);
+
+                                if (waysteps < 0) {
+
+                                    go = !go;
+
+
+                                } else {
+                                    waysteps = waysteps - 1;
+
+
+                                }
+
+
+                            }
+
+
+                        };
+
+                        wiggleset();
+
+                        wigglego(0.5);
+
+
+                        c.clearRect(0, 0, 1000, 1000);
+                        c.drawImage(background, x, y);
+                        //  c.fillStyle="rgba(50,50,50,0.5)";
+                        //   c.fillRect(0,0,1000,1000);
+
+                    };
+                    
+                    drawIt();
+                   
+
+                };
+
+        */
+        
+        
+
+
+        function PigletsTails()
+
+        {
+
+
+
+            // FUNCTIONS START
+
+
+
+
+            function drawGoneMushrooms() {
+
+
+                goneMushes.forEach(function(m, i, arr) {
+
+                    if (Date.now() - m[2] < 2000) {
+                        if (goneMushes[i][3] > 32) {
+                            goneMushes.pop();
+                        } else {
+                            if (m[4] == "pig") {
+
+                                c.drawImage(goneMushPic, 0 + m[3] * 64, 0, 64, 64, m[0], m[1], 64, 64);
+                                goneMushes[i][3] = goneMushes[i][3] + 1;
+                            } else {
+
+                                c.drawImage(boarEatMushPic, 96 * 3 + m[3] * 96, 0, 96, 96, m[0] - 32, m[1] - 32, 96, 96);
+                                goneMushes[i][3] = goneMushes[i][3] + 1;
+
+                            }
+
+                        }
+
+
+                    } else {
+                        goneMushes.pop();
+                    }
+
+                    console.log(m);
+                });
+
+            }
+
+
+
+            class Piglet
+
+            {
+
+                constructor(basic, motion, live)
+
+                {
+
+                    // Basic
+
+                    this.startx = basic.startx;
+                    this.starty = basic.starty;
+                    this.sizex = basic.sizex;
+                    this.sizey = basic.sizey;
+                    this.x = basic.x;
+                    this.y = basic.y;
+                    this.scalex = basic.scalex;
+                    this.scaley = basic.scaley;
+
+                    // Motion
+
+                    this.direction = motion.direction;
+                    this.speed = motion.speed;
+
+                    // Live
+
+
+
+
+                }
+
+
+
+
+            }
+
+            var piglet = new Piglet({
+
+                startx: 0,
+                starty: 0,
+                sizex: 50,
+                sizey: 50,
+                x: 0,
+                y: 0,
+                scalex: 80,
+                scaley: 80,
+
+
+            }, {
+                direction: "down",
+                speed: 19
+            }, {
+                alive: true,
+                hp: 3,
+                deathtime: Date.now()
+
+
+
+
+
+            });
+
+            console.log(piglet.speed);
+
+
+
+            function drawPig() {
+
+                function beg(img) {
+
+                    if (pw == "down") {
+
+
+                        c.drawImage(img, px, 0, 50, 50, ppx, ppy, 80, 80);
+
+
+
+
+                        if (ppy + 50 - skor < 491) {
+                            px = px + 48;
+                            ppy = ppy + skor;
+
+
+                            if (px > 100) {
+                                px = 0;
+                            }
+                        }
+
+                    }
+
+
+
+
+                    if (pw == "up") {
+
+
+                        c.drawImage(img, px, 150, 50, 50, ppx, ppy, 80, 80);
+
+
+                        if (ppy - skor > -10) {
+                            px = px + 48;
+                            ppy = ppy - skor;
+
+                            if (px > 100) {
+                                px = 0;
+                            }
+                        }
+                    }
+
+                    if (pw == "left") {
+
+
+                        c.drawImage(img, px, 50, 50, 50, ppx, ppy, 80, 80);
+
+                        if (ppx - skor > -10) {
+                            px = px + 48;
+                            ppx = ppx - skor;
+
+
+                            if (px > 100) {
+                                px = 0;
+                            }
+                        }
+                    }
+
+                    if (pw == "right") {
+
+
+                        c.drawImage(img, px, 100, 50, 50, ppx, ppy, 80, 80);
+
+                        if (ppx + 50 + skor < 940) {
+                            px = px + 48;
+                            ppx = ppx + skor;
+
+
+
+                            if (px > 100) {
+                                px = 0;
+                            }
+                        }
+                    }
+
+
+                };
+
+                if (live) {
+
+                    beg(img);
+
+                } else {
+
+
+                    if (mercanieway) {
+
+
+                        c.save();
+                        c.globalAlpha = mercanie;
+                        beg(img);
+                        mercanie = mercanie + 0.2;
+                        if (mercanie > 0.6) {
+                            mercanieway = !mercanieway;
+                        }
+                        c.restore();
+
+
+
+
+                    } else {
+                        c.save();
+                        c.globalAlpha = mercanie;
+                        beg(img);
+                        mercanie = mercanie - 0.2;
+                        if (mercanie < 0.3) {
+                            mercanieway = !mercanieway;
+                        }
+                        c.restore();
+
+                    }
+
+                    console.log(mercanie);
+
+                    if (Date.now() - undeadtime > 2000) {
+
+                        live = !live;
+
+
+
+
+                    }
+
+
+
+                }
+
+
+
+            };
+
+
+
+            function drawHpBonus() {
+
+                if (Date.now() > hpBonusTime) {
+
+                    if (hpBonusSet == 0) {
+
+                        hpBonusSet = 1;
+
+                        function getRandomInt(min, max) {
+                            min = Math.ceil(min);
+                            max = Math.floor(max);
+                            return Math.floor(Math.random() * (max - min)) + min; //Максимум не включается, минимум включается
+                        };
+                        hpBonusX = getRandomInt(0, 910);
+                        hpBonusY = getRandomInt(0, 510);
+
+
+                    }
+
+
+                    c.globalAlpha = hpBonusAplha;
+
+                    c.drawImage(hpBonusimg, hpBonusX, hpBonusY);
+
+                    if (hpBonusAplha < 1) {
+                        hpBonusAplha = hpBonusAplha + 0.05;
+
+                    } else {
+                        hpBonusAplha = 0.5;
+                    }
+                    c.globalAlpha = 1;
+                    if (Date.now() > hpBonusTime + 3000) {
+                        hpBonusTime = Date.now() + 10000;
+                        hpBonusSet = 0;
+                        hpBonusX = hpBonusX + 1000;
+                        hpBonusY = hpBonusY + 1000;
+
+                    }
+
+
+                }
+
+
+            }
+
+
+
+            function drawMushroom() {
+
+
+                if (grib) {
+
+
+                    function getRandomInt(min, max) {
+                        min = Math.ceil(min);
+                        max = Math.floor(max);
+                        return Math.floor(Math.random() * (max - min)) + min; //Максимум не включается, минимум включается
+                    }
+
+
+                    mx = getRandomInt(0, 910);
+                    my = getRandomInt(0, 510);
+
+                    console.log(mx, my);
+
+                    grib = !grib;
+
+                }
+
+                c.save();
+                c.translate(mx + 16, my + 16);
+                c.rotate(mushangle * Math.PI / 180);
+                c.drawImage(mush, 0, 0, 32, 32, -16, -16, 32, 32);
+                if (mushangle > 358) {
+                    mushangle = 0;
+                } else {
+                    mushangle = mushangle + 4;
+                }
+                c.restore();
+
+
+            };
+
+
+
+            function drawBoar() {
+
+
+
+                if (Date.now() - boartime > 5000) {
+
+                    wboar.volume = 0.6;
+                    //    wboar.play();
+                    boartime = Date.now();
+                }
+
+
+                if (bay > 260) {
+                    bay = 0;
+                };
+
+                if (Math.abs(ppx - bx) > Math.abs(ppy - by)) {
+
+
+
+
+                    if (ppx < bx) {
+                        bx = bx - 5;
+
+
+                        c.drawImage(boar, bax, bay, 120, 100, bx, by, 120, 100);
+                        c.drawImage(tellimg, 0, 0, 225, 125, bx - 70, by - 70, 225, 125);
+
+
+
+
+                    } else {
+                        bx = bx + 5;
+                        c.drawImage(boar, bax + 400, bay, 130, 100, bx, by, 130, 100);
+                        c.drawImage(tellimg, 0, 0, 225, 125, bx + 70, by - 70, 225, 125);
+                    }
+
+                } else {
+                    if (ppy < by) {
+                        by = by - 5;
+                        c.drawImage(boar, bax + 650, bay + 5, 70, 120, bx, by, 70, 120);
+                        c.drawImage(tellimg, 0, 0, 225, 125, bx - 40, by - 110, 225, 125);
+                    } else {
+                        by = by + 5;
+                        c.drawImage(boar, bax + 220, bay - 5, 100, 130, bx, by, 100, 130);
+                        c.drawImage(tellimg, 0, 0, 225, 125, bx - 40, by, 225, 125);
+                    }
+                }
+
+                bay = bay + 126;
+
+
+            };
+
+
+            function pigStolkbBonus()
+
+            {
+
+
+                var d = Math.sqrt(Math.pow((ppx + 40) - (hpBonusX + 16), 2) + Math.pow((ppy + 40) - (hpBonusY + 16), 2));
+
+                console.log(d);
+                if (d <= (30 + 15)) {
+
+
+                    goneMushes.push([hpBonusX, hpBonusY, Date.now(), 0, "pig"]);
+                    console.log(goneMushes);
+
+
+
+
+
+
+                    if (hp < 3) {
+                        hp = hp + 1;
+
+                    } else {
+                        score = score + 50;
+                    }
+
+
+                    hpBonusX = hpBonusX + 1000;
+                    hpBonusY = hpBonusY + 1000;
+
+                    s = 1;
+                    hpBonusTime = Date.now() + 10000;
+                    hpBonusSet = 0;
+
+
+                    hpBonusMusic.play();
+                    //         hrum.play();
+                }
+
+
+
+
+
+            };
+
+
+
+            function stolk()
+
+            {
+
+                var d = Math.sqrt(Math.pow((ppx + 40) - (mx + 16), 2) + Math.pow((ppy + 40) - (my + 16), 2));
+
+                console.log(d);
+                if (d <= (30 + 15)) {
+
+                    goneMushes.push([mx, my, Date.now(), 0, "pig"]);
+                    console.log(goneMushes);
+                    grib = !grib;
+
+                    s = 1;
+                    score = score + 10;
+                    hrum.pause();
+                    hrum.currentTime = 0
+                    hrum.play();
+                    //         hrum.play();
+
+
+
+                }
+
+
+
+
+
+
+
+            };
+
+
+            function stolkBoar()
+
+            {
+
+                /*
+                            c.beginPath();
+  c.arc(bx+50,by+70,60,0,2*Math.PI);
+                            c.fillStyle="blue";
+                            c.arc(ppx+40,ppy+40,30,0,2*Math.PI);
+                            c.fill();
+                            
+                            */
+
+
+                if (live) {
+
+                    var d = Math.sqrt(Math.pow((ppx + 40) - (bx + 50), 2) + Math.pow((ppy + 40) - (by + 70), 2));
+
+                    console.log("boar stolk:" + d);
+                    if (d <= (30 + 60)) {
+
+
+
+                        live = !live;
+                        hp = hp - 1;
+                        s = 1;
+                        if (score >= 30) {
+
+                            score = score - 30;
+
+                        }
+                        scoreBoared = 1;
+                        scoreBoaredTime = Date.now();
+                        wboar.play();
+                        undeadtime = Date.now();
+
+                    }
+                }
+
+
+
+
+
+
+
+
+            };
+
+            function stolkBoarwithMushroom()
+
+            {
+
+
+
+                var d = Math.sqrt(Math.pow((bx + 50) - (mx + 16), 2) + Math.pow((by + 70) - (my + 16), 2));
+
+                console.log("boar with mush" + d);
+                if (d <= (60 + 15)) {
+
+
+
+
+                    if (score >= 30) {
+
+                        score = score - 30;
+
+                    }
+                    scoreBoared = 1;
+                    scoreBoaredTime = Date.now();
+
+
+                    goneMushes.push([mx, my, Date.now(), 0, "boar"]);
+                    console.log(goneMushes);
+                    grib = !grib;
+                    s = 1;
+                    wildboar.play();
+
+
+                }
+
+
+
+
+
+
+
+
+            };
+
+            function stolkBoarwithBonus()
+
+            {
+
+                var d = Math.sqrt(Math.pow((bx + 50) - (hpBonusX + 16), 2) + Math.pow((by + 70) - (hpBonusY + 16), 2));
+
+                console.log(d);
+                if (d <= (60 + 15)) {
+
+
+
+                    if (score >= 50) {
+
+                        score = score - 50;
+
+                    }
+                    scoreBoared = 1;
+                    scoreBoaredTime = Date.now();
+
+
+                    goneMushes.push([hpBonusX, hpBonusY, Date.now(), 0, "boar"]);
+                    console.log(goneMushes);
+
+                    hpBonusX = hpBonusX + 1000;
+                    hpBonusY = hpBonusY + 1000;
+
+                    s = 1;
+                    hpBonusTime = Date.now() + 10000;
+                    hpBonusSet = 0;
+                    wildboar.play();
+
+
+                }
+
+
+
+            };
+
+            function drawScore(score) {
+
+                if (scoreBoared == 1 && Date.now() - scoreBoaredTime < scoreBoaredDuration) {
+
+                    if (scoreAlpha > 0.8) {
+                        scoreAlpha = 0.3;
+                    } else {
+
+                        scoreAlpha = scoreAlpha + 0.1;
+                    }
+
+
+                } else {
+                    scoreBoared = 0;
+                    scoreAlpha = 1;
+
+                }
+                c.fillStyle = "rgba(255,255,255," + scoreAlpha + ")";
+
+
+                c.font = '20px Pixel'
+
+                c.drawImage(scoreimg, 0, -2);
+                c.fillText("Score:" + score, 20, 37);
+            };
+
+
+            function drawHp(hp, x, y) {
+                for (var i = 0; i < hp; i++) {
+
+                    c.drawImage(hpimg, x + i * 60, y);
+
+                }
+            };
+
+
+            // FUNCTIONS END
+
+
+
+
+
+            class Render {
+
+
+                start() {
+
+
+                    function drawIt() {
+                        if (game) {
+
+
+                            tavern.play();
+
+                            function isgameOver() {
+
+                                if (hp < 1) {
+                                    game = !game;
+                                }
+
+
+                            };
+                            
+                            isgameOver();
+
+
+
+                            setTimeout(function() {
+                                requestAnimationFrame(drawIt);
+
+
+
+
+
+
+
+
+                                c.clearRect(0, 0, canvas.width, canvas.height);
+                                c.fillStyle = "red";
+                                c.fillRect(x, 100, 200, 100);
+                                c.drawImage(forest, 0, 0, forest.width, forest.height, 0, 0, forest.width, forest.height);
+
+
+
+                                drawGoneMushrooms();
+                                drawPig();
+
+                                drawHpBonus();
+                                drawMushroom();
+                                drawBoar();
+                                stolkBoarwithMushroom();
+                                stolk();
+                                stolkBoar();
+                                pigStolkbBonus();
+                                stolkBoarwithBonus();
+                                drawScore(score);
+                                drawHp(hp, 770, 5);
+
+
+
+
+
+
+
+                                // tests
+
+
+
+
+
+
+
+                                //
+
+
+                            }, 80);
+
+                        } else
+
+                        {
+                            if (hp > 0) {
+
+                                tavern.pause();
+                                c.fillStyle = "rgba(250,250,200,0.5)";
+                                c.fillRect(0, 0, 1000, 1000);
+
+                                c.font = '50px Pixel'
+
+                                // Создаем градиент
+                                var gradient = c.createLinearGradient(0, 0, canvas.width, 0);
+                                gradient.addColorStop("0", "magenta");
+                                gradient.addColorStop("0.5", "blue");
+                                gradient.addColorStop("1.0", "red");
+
+                                // Заполняем текст градиентом
+                                c.fillStyle = gradient;
+
+
+                                c.fillText("PAUSE", 380, 300, 300);
+                            } else {
+
+                                var x = 370;
+                                var y = 310;
+                                c.fillStyle = "rgba(250,250,200,0.5)";
+                                c.fillRect(0, 0, 1000, 1000);
+
+                                c.font = 'bold 50px Pixel'
+
+                                // Создаем градиент
+                                var gradient = c.createLinearGradient(0, 0, canvas.width, 0);
+                                gradient.addColorStop("0", "magenta");
+                                gradient.addColorStop("0.5", "blue");
+                                gradient.addColorStop("1.0", "red");
+
+                                // Заполняем текст градиентом
+                                c.fillStyle = gradient;
+
+
+                                c.fillText("GAME OVER", 320, 260, 300);
+                                c.drawImage(restartimg, x, y);
+
+                                function buttonrestart(event) {
+
+                                    console.log(event);
+                                    var Rect = document.getElementById("myCanvas").getBoundingClientRect();
+                                    console.log(Rect.left);
+                                    if (event.clientX > x + Rect.left && event.clientX < x + restartimg.width + Rect.left && event.clientY > y + Rect.top && event.clientY < y + restartimg.height + Rect.top) {
+
+
+
+
+                                        document.removeEventListener('pointerdown', buttonrestart);
+                                        pereminit();
+                                        drawIt();
+                                    }
+                                };
+
+                                document.addEventListener('pointerdown', buttonrestart);
+
+
+
+
+                            }
+
+
+
+
+
+                        }
+                    };
+
+                    drawIt();
+
+
+
+                }
+
+
+
+            }
+
+
+            var render = new Render();
+
+            render.start();
+
+
+            class Events {
+
+                init() {
+
+                    document.addEventListener('keydown', function(event) {
+                        console.log(event.key, game);
+                        if (event.key == "Enter" && hp > 0) {
+
+
+
+
+                            game = !game;
+                            drawIt();
+
+
+                        }
+                    });
+
+
+
+                    document.addEventListener('keydown', function(event) {
+                        if (event.code == 'KeyW') {
+                            pw = "up";
+
+
+                        }
+                    });
+
+                    document.addEventListener('keydown', function(event) {
+                        if (event.code == 'KeyD') {
+                            pw = "right";
+
+                        }
+                    });
+
+                    document.addEventListener('keydown', function(event) {
+                        if (event.code == 'KeyA') {
+                            pw = "left";
+
+                        }
+                    });
+
+                    document.addEventListener('keydown', function(event) {
+                        if (event.code == 'KeyS') {
+                            pw = "down";
+
+                        }
+
+
+                    });
+
+
+
+
+                }
+
+
+            }
+
+
+            var events = new Events();
+            events.init();
+
+
+
+        };
+
+    </script>
+</body>
+
+</html>
